@@ -1,0 +1,518 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SecCheck AI - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+        }
+        
+       .header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+        
+       .header h1 { color: white; font-size: 24px; }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-email { color: rgba(255,255,255,0.8); }
+        
+        .logout-btn {
+    background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.5);
+    padding: 10px 20px; border-radius: 8px;
+    cursor: pointer; font-weight: bold;
+    transition: all 0.3s;
+}
+.logout-btn:hover { background: rgba(255,255,255,0.3); border-color: white; }
+        
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+        
+        .analysis-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .analysis-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .analyze-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; border: none; padding: 14px 30px;
+    border-radius: 25px; font-size: 16px;
+    font-weight: bold; cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s;
+    width: 100%;
+}
+.analyze-btn:hover {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    transform: translateY(-2px);
+}
+        
+        .analyze-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .analyze-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .results-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .results-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .risk-score {
+            text-align: center;
+            padding: 30px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .risk-number {
+            font-size: 60px;
+            font-weight: bold;
+            color: #ef4444;
+        }
+        
+        .risk-label {
+            font-size: 20px;
+            color: #ef4444;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .threats-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .threats-list li {
+            padding: 12px;
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            color: #dc2626;
+        }
+        
+        .recommendations {
+            margin-top: 20px;
+        }
+        
+        .recommendations li {
+            padding: 10px;
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            color: #059669;
+            list-style: none;
+        }
+        
+        .loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #666;
+}
+
+.loading::after {
+    content: '...';
+    animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+}
+
+.spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+        .history-box {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.history-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: box-shadow 0.2s;
+}
+
+.history-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.history-input {
+    color: #333;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.history-risk {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.history-date {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.history-threats {
+    font-size: 13px;
+    color: #dc2626;
+}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛡️ SecCheck AI Dashboard</h1>
+        <div class="header-right">
+            <span class="user-email" id="userEmail"></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+    <div class="stats-bar" id="statsBar">
+        <div class="stat-card">
+            <div class="stat-number" id="totalScans">0</div>
+            <div class="stat-label">Total Scans</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="avgRisk">0</div>
+            <div class="stat-label">Average Risk</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="highestRisk">0</div>
+            <div class="stat-label">Highest Risk</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="totalThreats">0</div>
+            <div class="stat-label">Threats Found</div>
+        </div>
+    </div>
+
+    <div class="analysis-box">
+    <h2>Security Analysis</h2>
+            <textarea id="inputText" placeholder="Enter URL, code snippet, or system details to analyze..."></textarea>
+            <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">🔍 Analyze</button>
+        </div>
+
+        <div class="results-box" id="resultsBox" style="display:none">
+            <h2>Analysis Results</h2>
+            <div id="resultsContent"></div>
+        </div>
+           <div class="history-box" id="historyBox">
+        <h2>📊 Analysis History</h2>
+        <div id="historyContent">
+            <p style="text-align:center; color:#666;">Loading history...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+        const API_URL = 'http://localhost:5000/api';
+
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        const userEmail = localStorage.getItem('userEmail');
+
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        // Display user email
+        document.getElementById('userEmail').textContent = userEmail || '';
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        }
+
+        async function runAnalysis() {
+            const input = document.getElementById('inputText').value;
+            
+            if (!input) {
+                alert('Please enter something to analyze');
+                return;
+            }
+
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+
+            // Show loading
+            document.getElementById('resultsBox').style.display = 'block';
+            document.getElementById('resultsContent').innerHTML = '<div class="loading"><div class="spinner"></div><br>🤖 AI is analyzing your input...</div>';
+
+            try {
+                const response = await fetch(API_URL + '/analysis/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ inputText: input })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    document.getElementById('resultsContent').innerHTML = 
+                        '<p style="color:red">Error: ' + (data.error || 'Analysis failed') + '</p>';
+                }
+            } catch (err) {
+                document.getElementById('resultsContent').innerHTML = 
+                    '<p style="color:red">Cannot connect to server. Make sure backend is running.</p>';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔍 Analyze';
+            }
+        }
+
+        function displayResults(data) {
+            const riskLevel = getRiskLevel(data.riskScore);
+            
+            let html = `
+                <div class="risk-score">
+                    <div class="risk-number" style="color: ${riskLevel.color}">${data.riskScore}</div>
+                    <div class="risk-label" style="color: ${riskLevel.color}">${riskLevel.level} Risk</div>
+                </div>
+            `;
+
+            if (data.threats && data.threats.length > 0) {
+                html += '<h3>🚨 Detected Threats</h3><ul class="threats-list">';
+                data.threats.forEach(threat => {
+                    html += `<li>⚠️ ${threat}</li>`;
+                });
+                html += '</ul>';
+            }
+
+            if (data.recommendations && data.recommendations.length > 0) {
+                html += '<div class="recommendations"><h3>✅ Recommendations</h3><ul>';
+                data.recommendations.forEach(rec => {
+                    html += `<li>${rec}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            document.getElementById('resultsContent').innerHTML = html;
+            // Refresh history
+loadHistory();
+        }
+
+        function getRiskLevel(score) {
+            if (score >= 70) return { level: 'Critical', color: '#ef4444' };
+            if (score >= 40) return { level: 'High', color: '#f59e0b' };
+            if (score >= 20) return { level: 'Medium', color: '#eab308' };
+            return { level: 'Low', color: '#10b981' };
+        }
+
+// Load history when page loads
+window.onload = function() {
+    loadHistory();
+};
+
+async function loadHistory() {
+    try {
+        const response = await fetch(API_URL + '/analysis/history', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        const history = await response.json();
+
+        if (response.ok) {
+            displayHistory(history);
+        } else {
+            document.getElementById('historyContent').innerHTML = 
+                '<p style="text-align:center; color:red;">Failed to load history</p>';
+        }
+    } catch (err) {
+        document.getElementById('historyContent').innerHTML = 
+            '<p style="text-align:center; color:red;">Cannot connect to server</p>';
+    }
+}
+
+function updateStats(history) {
+    const totalScans = history.length;
+    
+    if (totalScans === 0) {
+        document.getElementById('totalScans').textContent = '0';
+        document.getElementById('avgRisk').textContent = '0';
+        document.getElementById('highestRisk').textContent = '0';
+        document.getElementById('totalThreats').textContent = '0';
+        return;
+    }
+    
+    // Calculate stats
+    const totalRisk = history.reduce((sum, item) => sum + item.riskScore, 0);
+    const avgRisk = Math.round(totalRisk / totalScans);
+    const highestRisk = Math.max(...history.map(item => item.riskScore));
+    const totalThreats = history.reduce((sum, item) => sum + item.threats.length, 0);
+    
+    // Update display
+    document.getElementById('totalScans').textContent = totalScans;
+    document.getElementById('avgRisk').textContent = avgRisk;
+    document.getElementById('highestRisk').textContent = highestRisk;
+    document.getElementById('totalThreats').textContent = totalThreats;
+}
+
+function displayHistory(history) {
+    if (history.length === 0) {
+        document.getElementById('historyContent').innerHTML = 
+            '<p style="text-align:center; color:#999;">No analyses yet. Run your first analysis above!</p>';
+        return;
+    }
+
+    let html = '';
+    history.forEach(item => {
+        const risk = getRiskLevel(item.riskScore);
+        html += `
+            <div class="history-item">
+                <div class="history-header">
+                    <span class="history-input">🔗 ${item.inputText}</span>
+                    <span class="history-risk" style="background: ${risk.color}20; color: ${risk.color}">
+                        ${item.riskScore} - ${risk.level}
+                    </span>
+                </div>
+                <div class="history-date">📅 ${new Date(item.createdAt).toLocaleString()}</div>
+                <div class="history-threats">
+                    ⚠️ ${item.threats.length} threats detected
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById('historyContent').innerHTML = html;
+    // Update stats bar
+updateStats(history);
+}
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SecCheck AI - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 400px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: normal;
+        }
+        
+        .tab {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab button.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button.submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        
+        button.submit:hover {
+            transform: translateY(-2px);
+        }
+        
+        button.submit:active {
+            transform: translateY(0);
+        }
+        
+        .message {
+            text-align: center;
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .message.error {
+            background: #ffe6e6;
+            color: #cc0000;
+            display: block;
+        }
+        
+        .message.success {
+            background: #e6ffe6;
+            color: #008000;
+            display: block;
+        }
+        
+        .toggle-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .toggle-text span {
+            color: #667eea;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .toggle-text span:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ SecCheck AI</h1>
+        <h2>AI-Powered Security Analysis</h2>
+        
+        <div class="tab">
+            <button id="loginTab" class="active" onclick="showLogin()">Login</button>
+            <button id="registerTab" onclick="showRegister()">Register</button>
+        </div>
+
+        <div id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Email address" />
+            <input type="password" id="loginPassword" placeholder="Password" />
+            <button class="submit" onclick="login()">Login</button>
+        </div>
+
+        <div id="registerForm" style="display:none">
+            <input type="email" id="registerEmail" placeholder="Email address" />
+            <input type="password" id="registerPassword" placeholder="Password (min 6 characters)" />
+            <button class="submit" onclick="register()">Register</button>
+        </div>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginTab').classList.add('active');
+            document.getElementById('registerTab').classList.remove('active');
+            hideMessage();
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('registerTab').classList.add('active');
+            document.getElementById('loginTab').classList.remove('active');
+            hideMessage();
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+        }
+
+        function hideMessage() {
+            const msgDiv = document.getElementById('message');
+            msgDiv.className = 'message';
+        }
+
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (!email || !password) {
+                showMessage('❌ Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL + '/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userEmail', email);
+                    showMessage('✅ Registration successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showMessage('❌ ' + data.error, 'error');
+                }
+            } catch (err) {
+                showMessage('❌ Cannot connect to server', 'error');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showMessage('❌ Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userEmail', email);
+                    showMessage('✅ Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showMessage('❌ ' + data.error, 'error');
+                }
+            } catch (err) {
+                showMessage('❌ Cannot connect to server', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
